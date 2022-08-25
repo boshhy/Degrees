@@ -91,9 +91,52 @@ def shortest_path(source, target):
 
     If no possible path, returns None.
     """
+    # Create a first node with the starting actor being the source
+    # Add the node to the frontier
+    start = Node(source, None, None)
+    frontier = QueueFrontier()
+    frontier.add(start)
+    # Create a set to keep track of the actors that we have explored
+    explored = set()
 
-    # TODO
-    raise NotImplementedError
+    # keep doing this until the target is matched or
+    # the frontier is empty
+    while True:
+        if frontier.empty():
+            return None
+
+        # Get the next node(actor) to explore add that actor to explored set
+        curr_node = frontier.remove()
+        explored.add(curr_node.state)
+
+        # Get all movies that the curr_nodes actore has starred in.
+        # and all actors for the movies retrieved.
+        neighbors = neighbors_for_person(curr_node.state)
+
+        # Do this for all the movies and actors in neighbors set
+        for movie, actor in neighbors:
+            # If actor is the target create and
+            # return the path from source to target
+            if actor == target:
+                path = []
+                # Add the last node to the path
+                path.append((movie, actor))
+
+                # Get all parent nodes that were used to get here
+                # except for the very first node created (this is handled in main)
+                while curr_node.parent:
+                    path.append((curr_node.action, curr_node.state))
+                    curr_node = curr_node.parent
+
+                # Return the path in reverse order (start source go to target)
+                path.reverse()
+                return path
+
+            # If the actor is not in the frontier and has not been explored yet
+            # add them to the frontier
+            if not frontier.contains_state(actor) and actor not in explored:
+                new_node = Node(actor, curr_node, movie)
+                frontier.add(new_node)
 
 
 def person_id_for_name(name):
